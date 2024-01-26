@@ -2,7 +2,10 @@ require('dotenv').config();
 const amqp = require('amqplib');
 const InfluencerIdList = require("./influencer-id-list");
 
-const message = JSON.stringify(InfluencerIdList);
+const message = JSON.stringify({
+  pattern:process.env.MESSAGE_PATTERN,
+  data:InfluencerIdList
+});
 const queueName = process.env.INFLUENCER_ID_QUEUE;
 
 async function sendMessage() {
@@ -13,7 +16,7 @@ async function sendMessage() {
     setInterval(async () => {
       await channel.sendToQueue(queueName, Buffer.from(message))
       console.log(`Message sent to RabbitMQ: ${message}`);
-    }, 1000)
+    }, 5000)
   } catch (error) {
     console.error('Error sending message:', error.message);
   }
