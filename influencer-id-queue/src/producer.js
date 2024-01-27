@@ -6,11 +6,11 @@ const message = JSON.stringify({
   pattern:process.env.MESSAGE_PATTERN,
   data:InfluencerIdList
 });
-const queueName = process.env.INFLUENCER_ID_QUEUE;
+const queueName = process.env.INFLUENCER_ID_QUEUE_NAME;
 
 async function sendMessage() {
   try {
-    const connection = await amqp.connect(process.env.RABBITMQ_URL);
+    const connection = await amqp.connect(process.env.INFLUENCER_ID_RMQ);
     const channel = await connection.createChannel();
     await channel.assertQueue(queueName, { durable: false });
     setInterval(async () => {

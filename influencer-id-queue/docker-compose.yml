@@ -7,20 +7,34 @@ services:
       context: .
     restart: always
     depends_on:
-      - rabbitmq
+      - influencer_id_rmq
 
-  rabbitmq:
+  influencer_id_rmq:
     image: rabbitmq:3.10-management
-    container_name: rabbitmq
+    container_name: influencer_id_rmq
     ports:
       - "5672:5672"   # RabbitMQ main port
       - "15672:15672" # RabbitMQ management plugin port
     volumes:
-      - rabbitmq_data:/var/lib/rabbitmq
+      - influencer-id-rmq-data:/var/lib/rabbitmq
+    environment:
+      RABBITMQ_DEFAULT_USER: "admin"
+      RABBITMQ_DEFAULT_PASS: "password"
+
+  influencer_statistics_rmq:
+    image: rabbitmq:3.10-management
+    container_name: influencer_statistics_rmq
+    ports:
+      - "5673:5672"
+      - "15673:15672" 
+    volumes:
+      - influencer-statistics-rmq-data:/var/lib/rabbitmq
     environment:
       RABBITMQ_DEFAULT_USER: "admin"
       RABBITMQ_DEFAULT_PASS: "password"
 
 volumes:
-  rabbitmq_data:
-    driver: local
+  influencer-id-rmq-data:
+      driver: local
+  influencer-statistics-rmq-data:
+      driver: local

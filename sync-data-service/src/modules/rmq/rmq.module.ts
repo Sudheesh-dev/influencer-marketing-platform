@@ -1,9 +1,10 @@
 import { Module } from '@nestjs/common';
 import { RMQHandler } from './rmq.handler';
+import { InfluencerStatisticsRMQService } from './influencer-statistics-rmq.service';
 
 @Module({
-  providers: [],
-  exports:[],
-  controllers:[RMQHandler]
+  providers: [InfluencerStatisticsRMQService],
+  controllers:[RMQHandler],
+  exports:[InfluencerStatisticsRMQService]
 })
 export class RmqModule {}
