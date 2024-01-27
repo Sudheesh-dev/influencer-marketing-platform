@@ -1,7 +1,7 @@
 import { Module } from '@nestjs/common';
 import { ConfigModule } from '@nestjs/config';
 import { RmqModule } from './modules/rmq/rmq.module';
-import { InfluencersModule } from './modules/influencers/influencers.module';
+import { InfluencerModule } from './modules/influencers/influencer.module';
 import { MockstagramModule } from './modules/mockstagram/mockstagram.module';
 
 @Module({
@@ -11,7 +11,7 @@ import { MockstagramModule } from './modules/mockstagram/mockstagram.module';
       isGlobal:true
     }),
     RmqModule, 
-    InfluencersModule, 
+    InfluencerModule, 
     MockstagramModule],
   controllers: [],
   providers: [],

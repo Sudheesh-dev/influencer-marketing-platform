@@ -20,7 +20,7 @@ export class InfluencerStatisticsRMQService implements OnModuleInit {
       this.connection = await amqp.connect(this.rabbitmqURL);
       this.channel = await this.connection.createChannel();
       await this.channel.assertQueue(this.queueName, { durable: true });
-      this.logger.log('Connected to RabbitMQ');
+      this.logger.log('Connected to Influencer Statistics RabbitMQ');
     } catch (error) {
       this.logger.error('Error connecting to RabbitMQ:', error);
       throw error
