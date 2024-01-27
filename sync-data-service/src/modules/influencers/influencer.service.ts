@@ -2,14 +2,18 @@ import { Injectable, Logger } from '@nestjs/common';
 import { InfluencerStatisticsRMQService } from '../rmq/influencer-statistics-rmq.service';
 import { InfluencerRepository } from './influencer.repository';
 import { InfluencerStatistics } from './influencer-statistics.model';
+import { MockStagramInfluencerStatistics } from '../mockstagram/mockstagram-influencer-statistics.model';
+import { MockstagramService } from '../mockstagram/mockstagram.service';
+import { InfluencerId } from '../rmq/rmq.handler';
 
 @Injectable()
-export class InfluencersService {
-  private readonly logger = new Logger(InfluencersService.name);
+export class InfluencerService {
+  private readonly logger = new Logger(InfluencerService.name);
 
   constructor(
     private readonly influencerStatisticsRMQService:InfluencerStatisticsRMQService,
-    private readonly influencerRepository:InfluencerRepository
+    private readonly influencerRepository:InfluencerRepository,
+    private readonly mockstagramService:MockstagramService
   ) {}
 
   async getInfluencerStatisticsById(influencerId: number): Promise<InfluencerStatistics> {
@@ -24,5 +28,30 @@ export class InfluencersService {
       throw new Error(`Failed to retrieve influencer with ID ${influencerId}`);
     }
   }
-  
+
+  calculateNewAverageFollowerCount(currentInfluencerStatistics:InfluencerStatistics, mockStagramInfluencerStatistics:MockStagramInfluencerStatistics):number{
+    const currentAvgFollowers = currentInfluencerStatistics.averageInfluencerCount
+    const currentRecordsCount = currentInfluencerStatistics.totalNoOfRecords
+    const newFollowerCount = mockStagramInfluencerStatistics.followerCount
+    return Math.floor(((currentAvgFollowers/(currentRecordsCount+1))*currentRecordsCount) + (newFollowerCount/(currentRecordsCount+1)))
+  }
+
+  async fetchAndPublishNewInfluencerStatistics(influencerId: InfluencerId): Promise<void> {
+    try {
+      const currentInfluencerStatistics = await this.getInfluencerStatisticsById(influencerId);
+      const latestMockStagramInfluencerStatistics = await this.mockstagramService.getInfluencerDataById(influencerId)
+      const newAverageFollowerCount = this.calculateNewAverageFollowerCount(currentInfluencerStatistics, latestMockStagramInfluencerStatistics);
+      const updatedData = {
+        influencerId,
+        newAverageFollowerCount,
+        latestMockStagramInfluencerStatistics
+      }
+      await this.influencerStatisticsRMQService.pushToQueue(JSON.stringify(updatedData));
+      this.logger.log(`Published new average follower count ${newAverageFollowerCount} for influencer ${influencerId} to RMQ`);
+    } catch (error) {
+      this.logger.error(`Error fetching and publishing influencer stats for ID ${influencerId}: ${error.message}`);
+      throw new Error(`Failed to fetch and publish influencer stats for ID ${influencerId}`);
+    }
+  }
+
 }

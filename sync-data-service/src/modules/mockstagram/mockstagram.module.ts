@@ -4,6 +4,7 @@ import { HttpModule } from '@nestjs/axios';
 
 @Module({
   imports:[HttpModule],
-  providers: [MockstagramService]
+  providers: [MockstagramService],
+  exports: [MockstagramService]
 })
 export class MockstagramModule {}
