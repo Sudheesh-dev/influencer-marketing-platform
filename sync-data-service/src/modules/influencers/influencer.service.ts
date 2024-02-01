@@ -41,11 +41,18 @@ export class InfluencerService {
       const currentInfluencerStatistics = await this.getInfluencerStatisticsById(influencerId);
       const latestMockStagramInfluencerStatistics = await this.mockstagramService.getInfluencerDataById(influencerId)
       const newAverageFollowerCount = this.calculateNewAverageFollowerCount(currentInfluencerStatistics, latestMockStagramInfluencerStatistics);
+      const updatedInfluencerStatistics:InfluencerStatistics = {
+        id:influencerId,
+        averageInfluencerCount:newAverageFollowerCount,
+        totalNoOfRecords : currentInfluencerStatistics.totalNoOfRecords + 1
+      }
+      await this.influencerRepository.update(updatedInfluencerStatistics)
       const updatedData = {
         influencerId,
         newAverageFollowerCount,
         latestMockStagramInfluencerStatistics
       }
+      this.logger.log("Updated influencer data", updatedData)
       await this.influencerStatisticsRMQService.pushToQueue(JSON.stringify(updatedData));
       this.logger.log(`Published new average follower count ${newAverageFollowerCount} for influencer ${influencerId} to RMQ`);
     } catch (error) {
